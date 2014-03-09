@@ -196,7 +196,7 @@ namespace QuantLib {
     /*! Base class for the pricing of a CMS coupon via static replication
         as in Hagan's "Conundrums..." article
     */
-    class HaganPricer: public CmsCouponPricer, public MeanRevertingPricer {
+    class HaganPricer: public CmsCouponPricer {
       public:
         /* */
         virtual Real swapletPrice() const = 0;

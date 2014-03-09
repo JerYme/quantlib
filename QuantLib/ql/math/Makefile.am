@@ -15,6 +15,7 @@ this_include_HEADERS = \
 	bspline.hpp \
 	comparison.hpp \
 	curve.hpp \
+	domain.hpp \
 	errorfunction.hpp \
 	factorial.hpp \
 	fastfouriertransform.hpp \
@@ -33,6 +34,7 @@ this_include_HEADERS = \
 	richardsonextrapolation.hpp \
 	sampledcurve.hpp \
 	solver1d.hpp \
+	surface.hpp \
 	transformedgrid.hpp
 
 libMath_la_SOURCES = \
@@ -48,7 +50,8 @@ libMath_la_SOURCES = \
 	quadratic.cpp \
 	richardsonextrapolation.cpp \
 	rounding.cpp \
-	sampledcurve.cpp
+	sampledcurve.cpp \
+	surface.cpp
 
 libMath_la_LIBADD = \
     copulas/libCopulas.la \

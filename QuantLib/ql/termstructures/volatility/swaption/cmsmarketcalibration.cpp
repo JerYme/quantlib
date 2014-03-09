@@ -202,16 +202,11 @@ namespace QuantLib {
                         const boost::shared_ptr<OptimizationMethod>& method,
                         const Array& guess,
                         bool isMeanReversionFixed) {
-        Size nSwapTenors = cmsMarket_->swapTenors().size();
-        QL_REQUIRE(nSwapTenors == guess.size() || nSwapTenors == guess.size()-1,
-                   "guess size (" << guess.size() << ") must be equal to swap tenors size (" << nSwapTenors
-                   << ") or greater by one if mean reversion is given as last element");
-        bool isMeanReversionGiven = (nSwapTenors == guess.size()-1);
         Array result;
-        if (isMeanReversionFixed || !isMeanReversionGiven) {
-            Size nBeta = guess.size() - (isMeanReversionGiven ? 1 : 0);
+        if (isMeanReversionFixed) {
+            Size nBeta = guess.size()-1;
             ParametersConstraint2 constraint(nBeta);
-            Real fixedMeanReversion = isMeanReversionGiven ? guess[nBeta] : Null<Real>();
+            Real fixedMeanReversion = guess[nBeta];
             Array betasGuess(nBeta);
             for (Size i=0; i<nBeta; ++i)
                 betasGuess[i] = guess[i];
@@ -219,10 +214,10 @@ namespace QuantLib {
             Problem problem(costFunction, constraint, betasGuess);
             endCriteria_ = method->minimize(problem, *endCriteria);
             Array tmp = problem.currentValue();
-            result = Array(nBeta+(isMeanReversionGiven ? 1 : 0));
+            result = Array(nBeta+1);
             for (Size i=0; i<nBeta; ++i)
                 result[i] = tmp[i];
-            if(isMeanReversionGiven) result[nBeta] = fixedMeanReversion;
+            result[nBeta] = fixedMeanReversion;
             error_ = costFunction.value(tmp);
         } else {
             ParametersConstraint constraint(guess.size()-1);
@@ -234,7 +229,6 @@ namespace QuantLib {
         }
         const boost::shared_ptr<SwaptionVolCube1> volCubeBySabr =
             boost::dynamic_pointer_cast<SwaptionVolCube1>(*volCube_);
-        volCubeBySabr->updateAfterRecalibration();
         sparseSabrParameters_ = volCubeBySabr->sparseSabrParameters();
         denseSabrParameters_ = volCubeBySabr->denseSabrParameters();
         browseCmsMarket_ = cmsMarket_->browse();

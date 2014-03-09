@@ -27,8 +27,6 @@
 #include <ql/indexes/swapindex.hpp>
 #include <ql/instruments/swap.hpp>
 
-#include <boost/make_shared.hpp>
-
 using std::vector;
 using boost::shared_ptr;
 
@@ -39,7 +37,7 @@ namespace QuantLib {
         const vector<shared_ptr<SwapIndex> >& swapIndexes,
         const shared_ptr<IborIndex>& iborIndex,
         const vector<vector<Handle<Quote> > >& bidAskSpreads,
-        const vector<shared_ptr<CmsCouponPricer> >& pricers,
+        const vector<shared_ptr<HaganPricer> >& pricers,
         const Handle<YieldTermStructure>& discountingTS)
     : swapLengths_(swapLengths),
       swapIndexes_(swapIndexes),
@@ -159,22 +157,15 @@ namespace QuantLib {
         }
     }
 
-    void CmsMarket::reprice(const Handle<SwaptionVolatilityStructure> &v,
+    void CmsMarket::reprice(const Handle<SwaptionVolatilityStructure>& v,
                             Real meanReversion) {
-        Handle<Quote> meanReversionQuote(
-            shared_ptr<Quote>(boost::make_shared<SimpleQuote>(meanReversion)));
-        for (Size j = 0; j < nSwapIndexes_; ++j) {
+        Handle<Quote> meanReversionQuote(shared_ptr<Quote>(new
+                                                SimpleQuote(meanReversion)));
+        for (Size j=0; j<nSwapIndexes_; ++j) {
             // ??
             // set new volatility structure and new mean reversion
             pricers_[j]->setSwaptionVolatility(v);
-            if (meanReversion != Null<Real>()) {
-                boost::shared_ptr<MeanRevertingPricer> p =
-                    boost::dynamic_pointer_cast<MeanRevertingPricer>(
-                        pricers_[j]);
-                QL_REQUIRE(p != NULL, "mean reverting pricer required at index "
-                                          << j);
-                p->setMeanReversion(meanReversionQuote);
-            }
+            pricers_[j]->setMeanReversion(meanReversionQuote);
         }
         performCalculations();
     }
